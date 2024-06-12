@@ -1,4 +1,4 @@
-# RAG Implementations for Medical Education
+# RAG Implementations for Question Generation from Medical books 
 
 ## Overview
 
