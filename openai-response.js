@@ -15,14 +15,14 @@ const numCPUs = os.cpus().length;
 if (cluster.isMaster) {
     console.log(`Master ${process.pid} is running`);
 
-    // Fork workers.
+
     for (let i = 0; i < numCPUs; i++) {
         cluster.fork();
     }
 
     cluster.on('exit', (worker, code, signal) => {
         console.log(`Worker ${worker.process.pid} died`);
-        cluster.fork(); // Replace the dead worker
+        cluster.fork(); 
     });
 } else {
     const server = http.createServer(async (req, res) => {
@@ -38,7 +38,6 @@ if (cluster.isMaster) {
                 stream: true,
             });
 
-            // Asynchronously iterate over the data chunks
             for await (const chunk of stream) {
                 res.write(chunk.choices[0]?.delta?.content || "");
                 console.log(`Sent: ${chunk}`);
