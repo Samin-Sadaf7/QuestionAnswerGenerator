@@ -1,10 +1,8 @@
 const axios = require('axios');
-
-jest.setTimeout(30000); // Set timeout to 30 seconds to handle all requests
+jest.setTimeout(30000); 
 
 const runLoadTest = async (numRequests) => {
     const requests = [];
-    //const expectedResponse = "Say this is a test";
     let successCount = 0;
     let failureCount = 0;
 
@@ -12,7 +10,7 @@ const runLoadTest = async (numRequests) => {
         requests.push(
             axios.get('http://localhost:3000')
                 .then(response => {
-                    if (response.status === 200){ //&& response.data.includes(expectedResponse)) {
+                    if (response.status === 200){ 
                         successCount++;
                     } else {
                         failureCount++;
