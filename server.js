@@ -1,31 +1,46 @@
-const express = require('express');
-const app = express();
-const port = 3000;
+const http = require('http');
+const os = require('os');
+const cluster = require('cluster');
 
-// Endpoint to handle regular requests
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
 
-// Endpoint to handle streaming responses
-app.get('/stream', (req, res) => {
-  res.setHeader('Content-Type', 'text/plain');
-  res.setHeader('Transfer-Encoding', 'chunked');
+async function* generateData() {
+  for (let i = 0; i < 1000; i++) {
+      // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Yield data chunk
+      yield `data chunk ${i}\n`;
+  }
+}
 
-  const messages = ["Hello", "this", "is", "a", "streaming", "response"];
+const numCPUs = os.cpus().length;
 
-  let index = 0;
-  const interval = setInterval(() => {
-    if (index < messages.length) {
-      res.write(messages[index] + '\n');
-      index++;
-    } else {
-      clearInterval(interval);
-      res.end();
+if(cluster.isMaster){
+  console.log(`Master ${process.pid} is running`);
+
+  // Fork workers.
+  for (let i = 0; i < numCPUs; i++) {
+      cluster.fork();
+  }
+
+  cluster.on('exit', (worker, code, signal) => {
+      console.log(`Worker ${worker.process.pid} died`);
+      cluster.fork(); // Replace the dead worker
+  });
+} else{
+  const server = http.createServer(async (req, res) => {
+    res.writeHead(200, {
+        'Content-Type': 'text/plain',
+        'Transfer-Encoding': 'chunked'
+    });
+    // Asynchronous iterate over the data chunks
+    for await (const chunk of generateData()) {
+        res.write(chunk);
+        console.log(`Sent: ${chunk}`);
     }
-  }, 1000);
+    res.end();
 });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
+const PORT = 3000;
+server.listen(PORT, () => 
+    console.log(`Server running at http://localhost:${PORT}/`) );
+}
