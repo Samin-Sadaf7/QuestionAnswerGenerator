@@ -4,7 +4,7 @@ dotenv.config()
 const {Worker} = require('worker_threads');
 const app = express();
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 app.get('/nonblocking', (req, res) =>{
     res.status(200).send("Non blocking Page");
